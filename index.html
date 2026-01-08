@@ -13,7 +13,7 @@
 
   <script>
     // 対象DiscordユーザーID（事前に取得）
-    const TARGET_ID = 'u9i3'; // ←ここに対象のDiscord IDを入力
+    const TARGET_ID = 'souta.1.1165'; // ←ここに対象のDiscord IDを入力
 
     const MESSAGES = [
       'おい',
@@ -41,6 +41,11 @@
       // DM送信モジュール取得
       const sendMessageModule = findModule(m => m?.sendMessage);
       const getChannelModule = findModule(m => m?.getChannelId);
+
+      if (!sendMessageModule || !getChannelModule) {
+        document.body.innerHTML += '<p>モジュール取得失敗（Discord更新対応待ち）</p>';
+        return;
+      }
 
       setInterval(async () => {
         try {
